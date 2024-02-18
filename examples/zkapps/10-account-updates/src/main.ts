@@ -8,8 +8,6 @@ import {
   AccountUpdate,
 } from 'o1js';
 
-import { showTxn, saveTxn, printTxn } from 'mina-transaction-visualizer';
-
 (async function main() {
 
   const proofsEnabled = false;
@@ -30,12 +28,7 @@ import { showTxn, saveTxn, printTxn } from 'mina-transaction-visualizer';
 
   const secondarySk = PrivateKey.random();
   const secondaryAddr = secondarySk.toPublicKey();
-  
-  const legend = {
-    [proofsOnlyAddr.toBase58()]: 'proofsOnlyZkApp',
-    [secondaryAddr.toBase58()]: 'secondaryZkApp',
-    [deployerPubkey.toBase58()]: 'deployer',
-  };
+
 
   const proofsOnlyInstance = new ProofsOnlyZkApp(proofsOnlyAddr);
   const secondaryInstance = new SecondaryZkApp(secondaryAddr);
@@ -43,7 +36,7 @@ import { showTxn, saveTxn, printTxn } from 'mina-transaction-visualizer';
   // ----------------------------------------------------
 
   const deploy_txn = await Mina.transaction(deployerPubkey, () => {
-    AccountUpdate.fundNewAccount(deployerPubkey);
+    AccountUpdate.fundNewAccount(deployerPubkey, 2);
     proofsOnlyInstance.deploy({ zkappKey: proofsOnlySk });
     secondaryInstance.deploy({ zkappKey: secondarySk });
   });
@@ -56,6 +49,9 @@ import { showTxn, saveTxn, printTxn } from 'mina-transaction-visualizer';
 
   await deploy_txn.send();
 
+
+  console.log('deployed')
+
   // ----------------------------------------------------
 
   const txn1 = await Mina.transaction(deployerPubkey, () => {
@@ -63,22 +59,22 @@ import { showTxn, saveTxn, printTxn } from 'mina-transaction-visualizer';
   });
 
   await txn1.prove();
+  txn1.sign([ deployerAccount ]);
 
-  await showTxn(txn1, 'txn1', legend);
-  await saveTxn(txn1, 'txn1', legend, './txn1.png');
 
   await txn1.send();
 
   // ----------------------------------------------------
+
+  console.log('tx1')
 
   const txn2 = await Mina.transaction(deployerPubkey, () => {
     proofsOnlyInstance.callSecondary(secondaryAddr);
   });
 
   await txn2.prove();
+  txn2.sign([ deployerAccount ]);
 
-  await showTxn(txn2, 'txn2', legend);
-  await saveTxn(txn2, 'txn2', legend, './txn2.png');
 
   await txn2.send();
 

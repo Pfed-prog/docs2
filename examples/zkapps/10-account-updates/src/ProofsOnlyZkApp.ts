@@ -21,7 +21,7 @@ export class ProofsOnlyZkApp extends SmartContract {
       ...Permissions.default(),
       setDelegate: Permissions.proof(),
       setPermissions: Permissions.proof(),
-      setVerificationKey: Permissions.proof(),
+      //setVerificationKey: Permissions.proof(),
       setZkappUri: Permissions.proof(),
       setTokenSymbol: Permissions.proof(),
       incrementNonce: Permissions.proof(),
